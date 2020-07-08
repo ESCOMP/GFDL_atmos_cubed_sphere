@@ -175,8 +175,11 @@ contains
                         gridstruct, flagstruct, neststruct, idiag, bd,                &
                         parent_grid, domain, diss_est,                                &
 #if ( defined CALC_ENERGY )
-                        qsize,qsize_condensate_loading,qsize_condensate_loading_idx,qsize_tracer_idx_cam2dyn,qsize_condensate_loading_cp,qsize_condensate_loading_cv, &
-                        se,ke,wv,wl,wi,wr,wsno,wg,tt,mo,mr,gravit, cpair, rearth,omega_cam,fv3_lcp_moist,fv3_lcv_moist,    &
+                        qsize,qsize_condensate_loading,dry_air_species_num,           &
+                        qsize_condensate_loading_idx,qsize_tracer_idx_cam2dyn,        &
+                        qsize_condensate_loading_cp,qsize_condensate_loading_cv,      &
+                        se,ke,wv,wl,wi,wr,wsno,wg,tt,mo,mr,gravit, cpair, rearth,     &
+                        omega_cam,fv3_lcp_moist,fv3_lcv_moist,                        &
 #endif
                         time_total)
 
@@ -219,9 +222,10 @@ contains
    real, intent(IN) :: gravit,cpair,rearth,omega_cam
    real, intent(OUT), dimension(bd%is:bd%ie  ,bd%js:bd%je  ,5)  ::  se,ke,wv,wl,wi,wr,wsno,wg,tt,mo,mr
    integer, intent(IN)  :: qsize
-   integer, intent(IN)  :: qsize_condensate_loading
+   integer, intent(IN)  :: qsize_condensate_loading,dry_air_species_num
    integer, intent(IN)  :: qsize_condensate_loading_idx(qsize_condensate_loading),qsize_tracer_idx_cam2dyn(qsize)
-   real, intent(IN)     :: qsize_condensate_loading_cp(qsize_condensate_loading),qsize_condensate_loading_cv(qsize_condensate_loading)
+   real, intent(IN)     :: qsize_condensate_loading_cp(qsize_condensate_loading), &
+                           qsize_condensate_loading_cv(qsize_condensate_loading)
    logical, intent(IN) :: fv3_lcp_moist,fv3_lcv_moist
 #endif
 ! ze0 no longer used
@@ -521,7 +525,7 @@ contains
 #if ( defined CALC_ENERGY )
       call calc_tot_energy_dynamics1(gridstruct, flagstruct,domain,bd,npx,npy,npz,ncnst,ps, &
            ptop,delp,u,v,ua,va,q,pt,phis, 'dAT', &
-           qsize,qsize_condensate_loading, &
+           qsize,qsize_condensate_loading,dry_air_species_num, &
            qsize_condensate_loading_idx, &
            qsize_tracer_idx_cam2dyn,qsize_condensate_loading_cp,qsize_condensate_loading_cv, &
            se(is:ie,js:je,4), ke(is:ie,js:je,4), wv(is:ie,js:je,4),wl(is:ie,js:je,4), &
@@ -612,7 +616,7 @@ contains
 #if ( defined CALC_ENERGY )
       call calc_tot_energy_dynamics1(gridstruct, flagstruct,domain,bd,npx,npy,npz,ncnst,ps, &
            ptop,delp,u,v,ua,va,q,temp,phis, 'dAF', &
-           qsize,qsize_condensate_loading, &
+           qsize,qsize_condensate_loading,dry_air_species_num, &
            qsize_condensate_loading_idx, &
            qsize_tracer_idx_cam2dyn,qsize_condensate_loading_cp,qsize_condensate_loading_cv, &
            se(is:ie,js:je,1), ke(is:ie,js:je,1), wv(is:ie,js:je,1),wl(is:ie,js:je,1), &
@@ -681,7 +685,7 @@ contains
 #if ( defined CALC_ENERGY )
       call calc_tot_energy_dynamics1(gridstruct, flagstruct,domain,bd,npx,npy,npz,ncnst,ps, &
            ptop,delp,u,v,ua,va,q,temp,phis, 'dAD', &
-           qsize,qsize_condensate_loading, &
+           qsize,qsize_condensate_loading,dry_air_species_num, &
            qsize_condensate_loading_idx, &
            qsize_tracer_idx_cam2dyn,qsize_condensate_loading_cp,qsize_condensate_loading_cv, &
            se(is:ie,js:je,2), ke(is:ie,js:je,2), wv(is:ie,js:je,2),wl(is:ie,js:je,2), &
@@ -777,7 +781,7 @@ contains
          if (last_step) then
             call calc_tot_energy_dynamics1(gridstruct, flagstruct,domain,bd,npx,npy,npz,ncnst,ps, &
                  ptop,delp,u,v,ua,va,q,pt,phis, 'dAR', &
-                 qsize,qsize_condensate_loading, &
+                 qsize,qsize_condensate_loading,dry_air_species_num, &
                  qsize_condensate_loading_idx, &
                  qsize_tracer_idx_cam2dyn,qsize_condensate_loading_cp,qsize_condensate_loading_cv, &
                  se(is:ie,js:je,3), ke(is:ie,js:je,3), wv(is:ie,js:je,3),wl(is:ie,js:je,3), &
@@ -804,7 +808,7 @@ contains
              enddo
              call calc_tot_energy_dynamics1(gridstruct, flagstruct,domain,bd,npx,npy,npz,ncnst,ps, &
                  ptop,delp,u,v,ua,va,q,temp,phis, 'dAR', &
-                 qsize,qsize_condensate_loading, &
+                 qsize,qsize_condensate_loading,dry_air_species_num, &
                  qsize_condensate_loading_idx, &
                  qsize_tracer_idx_cam2dyn,qsize_condensate_loading_cp,qsize_condensate_loading_cv, &
                  se(is:ie,js:je,3), ke(is:ie,js:je,3),wv(is:ie,js:je,3),wl(is:ie,js:je,3), &
@@ -1498,8 +1502,11 @@ contains
 !===============================================================================
   subroutine calc_tot_energy_dynamics1(gridstruct, flagstruct,domain,bd,npx,npy,npz,ncnst,ps, &
                                        ptop,delp,u,v,ua_in,va_in,q,pt,phis,outfld_name_suffix, &
-                                       qsize,qsize_condensate_loading,qsize_condensate_loading_idx,qsize_tracer_idx_cam2dyn,qsize_condensate_loading_cp,qsize_condensate_loading_cv, &
-                                       se, ke,wv,wl,wi,wr,ws,wg,tt,mo,mr,gravit, cpair, rearth,omega_cam,ncnt,last_step,fv3_lcp_moist,fv3_lcv_moist)
+                                       qsize,qsize_condensate_loading,dry_air_species_num, &
+                                       qsize_condensate_loading_idx,qsize_tracer_idx_cam2dyn, &
+                                       qsize_condensate_loading_cp,qsize_condensate_loading_cv, &
+                                       se, ke,wv,wl,wi,wr,ws,wg,tt,mo,mr,gravit, cpair, rearth, &
+                                       omega_cam,ncnt,last_step,fv3_lcp_moist,fv3_lcv_moist)
     use constants_mod,          only: grav, radius, cp_air, omega
     use field_manager_mod,      only: MODEL_ATMOS
     use fv_mp_mod,              only: ng
@@ -1525,7 +1532,7 @@ contains
     real, intent(inout), dimension(bd%is:bd%ie ,bd%js:bd%je)           :: se,ke,wv,wl,wi,wr,ws,wg,tt,mo,mr
     character*(*)    , intent(in)                                    :: outfld_name_suffix ! suffix for "outfld" names
     integer, intent(IN)                                              :: qsize
-    integer, intent(IN)                                              :: qsize_condensate_loading
+    integer, intent(IN)                                              :: qsize_condensate_loading,dry_air_species_num
     integer, intent(IN),dimension(qsize_condensate_loading)          :: qsize_condensate_loading_idx
     integer, intent(IN),dimension(qsize)                             :: qsize_tracer_idx_cam2dyn
     real,    intent(IN),dimension(qsize_condensate_loading)          :: qsize_condensate_loading_cp
@@ -1613,7 +1620,7 @@ contains
     
 !!$    if ( hist_fld_active(name_out1).or.hist_fld_active(name_out2).or.hist_fld_active(name_out3).or.&
 !!$         hist_fld_active(name_out4).or.hist_fld_active(name_out5).or.hist_fld_active(name_out6).or..true.) then
-       if (qsize_condensate_loading>1) then
+       if (qsize_condensate_loading-dry_air_species_num > 1) then
           ixcldliq_ffsl  = get_tracer_index (MODEL_ATMOS, 'liq_wat' )
           ixcldice_ffsl  = get_tracer_index (MODEL_ATMOS, 'ice_wat' )
           ixrain_ffsl    = get_tracer_index (MODEL_ATMOS, 'rainwat' )
@@ -1641,8 +1648,8 @@ contains
                !
                ! make energy consistent with CAM physics (only water vapor and dry air in pressure)
                !
-               if ((.not.fv3_lcp_moist).and.(.not.fv3_lcv_moist).and.qsize_condensate_loading>1) then
-                 do nq=2,qsize_condensate_loading
+               if ((.not.fv3_lcp_moist).and.(.not.fv3_lcv_moist).and.qsize_condensate_loading-dry_air_species_num>1) then
+                 do nq=2,qsize_condensate_loading-dry_air_species_num
                    m_cnst_ffsl=qsize_condensate_loading_idx(nq)
 !jt                   m_cnst=qsize_condensate_loading_idx(nq)
 !jt                   m_cnst_ffsl=qsize_tracer_idx_cam2dyn(m_cnst)
@@ -1659,12 +1666,12 @@ contains
                    !
                    ! Start with energy of dry air and add energy of condensates
                    dp(i,j,k) = delp(i,j,k)             
-                   do nq=1,qsize_condensate_loading                 
+                   do nq=1,qsize_condensate_loading-dry_air_species_num
                       m_cnst_ffsl=qsize_condensate_loading_idx(nq)
                       dp(i,j,k) = dp(i,j,k)-delp(i,j,k)*q(i,j,k,m_cnst_ffsl)
                    end do
                    se_tmp = cpair*dp(i,j,k)
-                   do nq=1,qsize_condensate_loading
+                   do nq=1,qsize_condensate_loading-dry_air_species_num
                       m_cnst_ffsl=qsize_condensate_loading_idx(nq)
                       if (fv3_lcv_moist) then
                          se_tmp = se_tmp+qsize_condensate_loading_cv(nq)*q(i,j,k,m_cnst_ffsl)*delp(i,j,k)
@@ -1866,7 +1873,8 @@ contains
             write(6, '(a,e25.17)') 'global column integrated graupel wg_'//trim(outfld_name_suffix)//'         = ',wg_glob
             write(6, '(a,e25.17)') 'global column integrated wind AAM mr_'//trim(outfld_name_suffix)//'         = ',mr_glob
             write(6, '(a,e25.17)') 'global column integrated mass AAM mo_'//trim(outfld_name_suffix)//'         = ',mo_glob
-            if (ixtt_ffsl > 1)      write(6, '(a,e25.17)') 'global column integrated test tracer tt_'//trim(outfld_name_suffix)//' = ',tt_glob
+            if (ixtt_ffsl > 1) write(6, '(a,e25.17)') &
+                 'global column integrated test tracer tt_'//trim(outfld_name_suffix)//' = ',tt_glob
          end if
          end if
       end if
