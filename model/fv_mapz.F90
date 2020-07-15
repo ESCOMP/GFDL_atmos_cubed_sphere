@@ -3269,8 +3269,8 @@ endif        ! end last_step check
   if (snowwat.ge.1.and.snowwat.le.6) qs(is:ie) = qs(is:ie)+q(is:ie,j,k,snowwat)
   if (graupel.ge.1.and.graupel.le.6) qs(is:ie) = qs(is:ie)+q(is:ie,j,k,graupel)
   qd(is:ie) = ql(is:ie) + qs(is:ie)
-     
-  do i=is,ie 
+
+  do i=is,ie
      cvm(i) = (1.-(qv(i)+qd(i)))*cv_air + qv(i)*cv_vap + ql(i)*c_liq + qs(i)*c_ice
   enddo
 
@@ -3373,8 +3373,8 @@ end subroutine moist_cv
   if (snowwat.ge.1.and.snowwat.le.6) qs(is:ie) = qs(is:ie)+q(is:ie,j,k,snowwat)
   if (graupel.ge.1.and.graupel.le.6) qs(is:ie) = qs(is:ie)+q(is:ie,j,k,graupel)
   qd(is:ie) = ql(is:ie) + qs(is:ie)
-     
-  do i=is,ie 
+
+  do i=is,ie
      cpm(i) = (1.-(qv(i)+qd(i)))*cp_air + qv(i)*cp_vap + ql(i)*c_liq + qs(i)*c_ice
   enddo
 
