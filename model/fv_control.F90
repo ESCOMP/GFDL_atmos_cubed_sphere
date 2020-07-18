@@ -410,7 +410,8 @@ module fv_control_mod
 ! override number of tracers by reading field_table
 !--------------------------------------------------
 
-#ifndef CESMCOUPLED   ! FV3-CESM port sets namelist ncnst correctly and calls tm_register later
+#ifndef CESMCOUPLED
+         ! FV3-CESM port sets namelist ncnst correctly and calls tm_register later
          !not sure if this works with multiple grids
          call tm_register_tracers (MODEL_ATMOS, ncnst, nt_prog, pnats, num_family)
          if(is_master()) then
