@@ -31,6 +31,7 @@ SRCS_F90 = \
 		   ./model/boundary.F90                           \
 		   ./model/dyn_core.F90                           \
 		   ./model/fv_arrays.F90                          \
+		   ./model/fv_cmp.F90                             \
 		   ./model/fv_control.F90                         \
 		   ./model/fv_dynamics.F90                        \
 		   ./model/fv_fill.F90                            \
@@ -48,6 +49,7 @@ SRCS_F90 = \
 		   ./tools/external_ic.F90                        \
 		   ./tools/external_sst.F90                       \
 		   ./tools/fv_diagnostics.F90                     \
+		   ./tools/fv_diag_column.F90
 		   ./tools/fv_eta.F90                             \
 		   ./tools/fv_grid_tools.F90                      \
 		   ./tools/fv_io.F90                              \

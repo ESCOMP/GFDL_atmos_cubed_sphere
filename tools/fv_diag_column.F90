@@ -60,6 +60,7 @@ contains
 
    integer :: ios, nlunit
    logical :: exists
+   character(len=64) :: errmsg
 
    call write_version_number ( 'FV_DIAG_COLUMN_MOD', version )
 
