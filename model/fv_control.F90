@@ -657,6 +657,9 @@ module fv_control_mod
         Atm(n)%npes_per_tile = size(Atm(n)%pelist)/Atm(n)%flagstruct%ntiles ! domain decomp doesn't set this globally
      enddo
 
+#ifndef CESMCOUPLED
+     ! FV3-CESM port sets namelist ncnst correctly and calls tm_register later
+     ! not sure if this works with multiple grids
      ! 6. Set up domain and Atm structure
      call tm_register_tracers (MODEL_ATMOS, Atm(this_grid)%flagstruct%ncnst, Atm(this_grid)%flagstruct%nt_prog, &
           Atm(this_grid)%flagstruct%pnats, num_family)
@@ -666,6 +669,11 @@ module fv_control_mod
         print*, ''
      endif
      if (dnrts < 0) dnrts = dnats
+#else
+     ! CESM-FV3 has no non-advected tracers
+     dnrts = 0
+     dnats = 0
+#endif
 
      do n=1,ngrids
         !FIXME still setting up dummy structures for other grids for convenience reasons
