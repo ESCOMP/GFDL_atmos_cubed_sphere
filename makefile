@@ -31,6 +31,7 @@ SRCS_F90 = \
 		   ./model/boundary.F90                           \
 		   ./model/dyn_core.F90                           \
 		   ./model/fv_arrays.F90                          \
+		   ./model/fv_cmp.F90                             \
 		   ./model/fv_control.F90                         \
 		   ./model/fv_dynamics.F90                        \
 		   ./model/fv_fill.F90                            \
